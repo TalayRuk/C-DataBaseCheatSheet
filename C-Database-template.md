@@ -78,6 +78,8 @@ To make it pass*
 #### Write Find() method in Task.cs
 Here we are using a SELECT query using WHERE id = @TaskId. We set @TaskId equal to the id that we pass into the Find() method, and convert it to a string so that it can be used in the query string. Then we read the result of the query to create a new Task named foundTask and return it.
 
+use this link for below : https://www.learnhowtoprogram.com/c/c-database-basics/one-to-many-relationships-in-sql-for-c
+
 10. Now we need to add TABLE stylist to hair_style db
 #### SQLCMD -S "(localdb)\mssqllocaldb" -d hair_salon
 -add stylist database table since it's a one to many relation; the 1 stylist can has many clients but a client can only have 1 stylist thus client is act as task & stylis is act as category (in hair_salon project, add stylists instead of categories)
@@ -106,33 +108,34 @@ _so that a task can belong to a category. To do this we will need to save the ta
 #### 16. Modify in Task.cs to include a categoryId in Task class constructor.
 -  now that we pass in 1 as the addition argument for **new Tasks.** We are going to modify the Task class constructor to add **categoryId** as its addition argument.
 
-- 1. **add int CategoryId to Task constructor**
+  1. **add int CategoryId to Task constructor**
 
-- 2. **add Getter & Setter for CategoryId()**
+  2. **add Getter & Setter for CategoryId()**
 
 - 3. **add bool categoryEqaulity in public override also in return add (categoryEqaulity)**
 
-- 4. **GetAll() at rdr.Read()
+- 4. **GetAll() at rdr.Read()**
       - add int taskCategoryId = rdr.GetInt32(2);
-      - add taskCategoryId to new Task**
+      - add taskCategoryId to new Task
 
-- 5. **Save() at SqlCommand
+- 5. **Save() at SqlCommand**
       - add @taskCategory);, conn);
       - add SqlParameter categoryIdParameter**
       - _SqlParameter categoryIdParameter = new SqlParameter();
     categoryIdParameter.ParameterName = "@TaskCategoryId";
     categoryIdParameter.Value = this.GetCategoryId();_
-     - **Add cmd.Parameters.Add(categoryIdParameter);
+     - Add cmd.Parameters.Add(categoryIdParameter);
 
-- 6. **public static Task Find(int id)     
+- 6. **public static Task Find(int id)**     
      - Below SqlDataReader rdr
         - Add int foundTaskCategoryId = 0;
      - Below while(rdr.Read())
         - foundTaskCategoryId = rdr.GetInt32(2);
-     - At Task foundTask  = new Task(Add foundTaskCategoryId)**  
+     - At Task foundTask  = new Task(Add foundTaskCategoryId)  
 
 #### 17. in CategoryTest.cs add void Test RetrievesAllTasks withCategory()
----[Fact]
+---
+    [Fact]
     public void Test_GetTasks_RetrievesAllTasksWithCategory()
     {
       Category testCategory = new Category("Household chores");
@@ -150,8 +153,10 @@ _so that a task can belong to a category. To do this we will need to save the ta
       Assert.Equal(testTaskList, resultTaskList);
     }---
 
-#### 18. in Category.cs: Create GetTask() to get test above passing.           
---- public List<Task> GetTasks()
+#### 18. in Category.cs: Create GetTask() to get test above passing.
+  _This is very similar to our GetAll() methods. We take static off of the method declaration so we can call it on our Category instances, and then use that instance's id as the reference for our SQL query. We can then return our SqlCommand result directly as a List<Task>._s           
+---
+    public List<Task> GetTasks()
     {
       SqlConnection conn = DB.Connection();
       conn.Open();
