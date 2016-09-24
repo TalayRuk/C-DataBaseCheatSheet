@@ -28,8 +28,8 @@ public void Dispose()
 
 2. Start writing Client.cs: write class & constructor, Getter & Setter
 #### add GetAll() method to Task class
-##### public static list<Task> GetAll()
-
+#### public static list<Task> GetAll()
+then
 #### add DeleteAll() method to Task class
 
 3. B4 we save tasks to the database, need to override to tell
@@ -49,7 +49,7 @@ public override bool Equals(System.Object otherKitten)
 }
 _the default Equals method accepts any type of object, when we override it, we need to use (System.Object otherKitten) for the argument to match the method signature. Then, we turn the object into a Kitten object with Kitten newKitten = (Kitten) otherKitten;. When we change an object from one type to another, it's called type casting._
 
-#### Once we have the kitten object, we compare their names. If they're the same, we return true to indicate that they are the same kitten.
+**Once we have the kitten object, we compare their names. If they're the same, we return true to indicate that they are the same kitten.**
 
 4. Need this method _to compare a kitten with an object of another class:_
 #### add public override int GetHashCode()
@@ -60,13 +60,37 @@ public override int GetHashCode()
 
 5. Once retrieve the List return from GetAll() We can retrieve the first & only saved in that list testTask. Then run the Equal() = assertion to the test that they are the same. Now we can add:
 #### Add public void Save()
--
+- In the **cmd** variable, we use the **parameter placeholder** *@TaskDescription*. We want to use use parameter placeholders whenever we are entering data that a user enters. Information stored to a parameter is treated as field data and note part of the SQL statement, which helps to **protect our application from SQL injection(=hack web applications)!**
+*need to go back & read about parameter https://www.learnhowtoprogram.com/c/c-database-basics/to-do-list-with-databases-part-4-sql-queries-with-parameters*
 
-SQLCMD -S "(localdb)\mssqllocaldb" -d hair_style
+6. When task is saved into database, it's assigned a unique ID. We want to make sure that when the task objects that we instantiate to have the same ID as the column they are built from. Also when we save the object to the database, we want it to have the same ID that is assigned to it in the database.
+#### Write a test spec for Save() to test this behavior.
 
--add stylist database table
--backup & restore hair_salon_tests
--add stylist.cs
--add stylistTests.cs
--add foreign key 1> ALTER TABLE tasks ADD stylist_id INT; 2> GO *b/c 1 stylist can have many Client -one to many
+7. now we have save to ID
+#### Modify override Equal() to account for ID by adding idEquality
+
+8. we need to be able to find objects we have saved into the database.
+#### Test: Find() .. from the save() & getId()
+*The line Task.Find(testTask.GetId()) uses the task's id to query the database and construct a new object from the information stored in that row.
+To make it pass*
+
+9. after the test
+#### Write Find() method in Task.cs
+Here we are using a SELECT query using WHERE id = @TaskId. We set @TaskId equal to the id that we pass into the Find() method, and convert it to a string so that it can be used in the query string. Then we read the result of the query to create a new Task named foundTask and return it.
+
+10. Now we need to add TABLE stylist to hair_style db
+#### SQLCMD -S "(localdb)\mssqllocaldb" -d hair_salon
+-add stylist database table since it's a one to many relation; the 1 stylist can has many clients but a client can only have 1 stylist thus client is act as task & stylis is act as category (in hair_salon project, add stylists instead of categories)
+1> CREATE TABLE categories (id INT IDENTITY (1,1), s_name VARCHAR(255));
+2> GO
+
+11. then Recreate our **hair_salon_test** database to use the new schema, & including the stylists table.
+#### Backup **hair_salon** & restore **hair_salon_test**
+
+12. create stylistTests.cs
+####
+ add stylist.cs
+
+-add foreign key
+1> ALTER TABLE tasks ADD stylist_id INT; 2> GO *b/c 1 stylist can have many Client -one to many
 -add
