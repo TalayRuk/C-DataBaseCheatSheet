@@ -2,7 +2,7 @@ Steps
 
 *...check out conventions in database naming:https://www.learnhowtoprogram.com/c/c-database-basics/conventions-in-database-naming*
 
-##See this link to Migrate databases w/SSMS (to export & import database) https://www.learnhowtoprogram.com/c/c-database-basics/migrating-databases-with-ssms 
+##See this link to Migrate databases w/SSMS (to export & import database) https://www.learnhowtoprogram.com/c/c-database-basics/migrating-databases-with-ssms
 
 Before we start writing our code, we'll need to open SQLCMD, create a database named todo, and make a table called tasks with a primary key id and a varchar column called description:
 
@@ -198,7 +198,7 @@ _so that a task can belong to a category. To do this we will need to save the ta
 refer to this link for below : https://www.learnhowtoprogram.com/c/c-database-basics/nancy-with-databases
 
 #### 19. in a Module\HomeModule.cs: **Add RESTful Route w/Nancy**
-- https://www.learnhowtoprogram.com/c/web-apps-with-nancy/restful-routes-with-nancy
+-  https://www.learnhowtoprogram.com/c/web-apps-with-nancy/restful-routes-with-nancy
 
 ---
 using System.Collections.Generic;
