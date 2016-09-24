@@ -91,8 +91,94 @@ Here we are using a SELECT query using WHERE id = @TaskId. We set @TaskId equal 
 **adding hair_salon_test to DBConfiguration**
 - do the same as ClientTests.cs
 
-13.
+#### 13. Add Foreign KEY
+_so that a task can belong to a category. To do this we will need to save the task's category ID into our task Table. **The foreign key** = a column that connects one table to another using its ID_
+- log in to our database again with **SQLCMD -S "(localdb)\mssqllocaldb" -d hair_salon**
 
--add foreign key
-1> ALTER TABLE tasks ADD stylist_id INT; 2> GO *b/c 1 stylist can have many Client -one to many
--add
+1> ALTER TABLE tasks ADD stylist_id INT;
+2> GO
+
+#### 14. Also need to BACKUP hair_salon & RESTORE *hair_salon_test*
+
+#### 15. GO BACK to TaskTest.cs & add categoryId (1) as second argument when initializing new Task(s).
+**_write a unit test for our Task class that ensures we are saving our categoryId into our tasks table. Now that we need to pass the constructor a categoryId, we'll need to update all of our tests to include a category ID when initializing a task_**
+
+#### 16. Modify in Task.cs to include a categoryId in Task class constructor.
+-  now that we pass in 1 as the addition argument for **new Tasks.** We are going to modify the Task class constructor to add **categoryId** as its addition argument.
+
+- 1. **add int CategoryId to Task constructor**
+
+- 2. **add Getter & Setter for CategoryId()**
+
+- 3. **add bool categoryEqaulity in public override also in return add (categoryEqaulity)**
+
+- 4. **GetAll() at rdr.Read()
+      - add int taskCategoryId = rdr.GetInt32(2);
+      - add taskCategoryId to new Task**
+
+- 5. **Save() at SqlCommand
+      - add @taskCategory);, conn);
+      - add SqlParameter categoryIdParameter**
+      - _SqlParameter categoryIdParameter = new SqlParameter();
+    categoryIdParameter.ParameterName = "@TaskCategoryId";
+    categoryIdParameter.Value = this.GetCategoryId();_
+     - **Add cmd.Parameters.Add(categoryIdParameter);
+
+- 6. **public static Task Find(int id)     
+     - Below SqlDataReader rdr
+        - Add int foundTaskCategoryId = 0;
+     - Below while(rdr.Read())
+        - foundTaskCategoryId = rdr.GetInt32(2);
+     - At Task foundTask  = new Task(Add foundTaskCategoryId)**  
+
+#### 17. in CategoryTest.cs add void Test RetrievesAllTasks withCategory()
+---[Fact]
+    public void Test_GetTasks_RetrievesAllTasksWithCategory()
+    {
+      Category testCategory = new Category("Household chores");
+      testCategory.Save();
+
+      Task firstTask = new Task("Mow the lawn", testCategory.GetId());
+      firstTask.Save();
+      Task secondTask = new Task("Do the dishes", testCategory.GetId());
+      secondTask.Save();
+
+
+      List<Task> testTaskList = new List<Task> {firstTask, secondTask};
+      List<Task> resultTaskList = testCategory.GetTasks();
+
+      Assert.Equal(testTaskList, resultTaskList);
+    }---
+
+#### 18. in Category.cs: Create GetTask() to get test above passing.           
+--- public List<Task> GetTasks()
+    {
+      SqlConnection conn = DB.Connection();
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("SELECT * FROM tasks WHERE category_id = @CategoryId;", conn);
+      SqlParameter categoryIdParameter = new SqlParameter();
+      categoryIdParameter.ParameterName = "@CategoryId";
+      categoryIdParameter.Value = this.GetId();
+      cmd.Parameters.Add(categoryIdParameter);
+      SqlDataReader rdr = cmd.ExecuteReader();
+
+      List<Task> tasks = new List<Task> {};
+      while(rdr.Read())
+      {
+        int taskId = rdr.GetInt32(0);
+        string taskDescription = rdr.GetString(1);
+        int taskCategoryId = rdr.GetInt32(2);
+        Task newTask = new Task(taskDescription, taskCategoryId, taskId);
+        tasks.Add(newTask);
+      }
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+      if (conn != null)
+      {
+        conn.Close();
+      }
+      return tasks;
+    } ---
