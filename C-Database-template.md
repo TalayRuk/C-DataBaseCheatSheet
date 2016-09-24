@@ -87,9 +87,11 @@ Here we are using a SELECT query using WHERE id = @TaskId. We set @TaskId equal 
 11. then Recreate our **hair_salon_test** database to use the new schema, & including the stylists table.
 #### Backup **hair_salon** & restore **hair_salon_test**
 
-12. create stylistTests.cs
-####
- add stylist.cs
+12. **Create StylistTests.cs**
+*adding hair_salon_test to DBConfiguration*
+-do the same as ClientTests.cs
+
+13. 
 
 -add foreign key
 1> ALTER TABLE tasks ADD stylist_id INT; 2> GO *b/c 1 stylist can have many Client -one to many
