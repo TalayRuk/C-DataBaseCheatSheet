@@ -201,30 +201,30 @@ refer to this link for below : https://www.learnhowtoprogram.com/c/c-database-ba
 -  https://www.learnhowtoprogram.com/c/web-apps-with-nancy/restful-routes-with-nancy
 
 ---
-using System.Collections.Generic;
-using Nancy;
-using Nancy.ViewEngines.Razor;
+    using System.Collections.Generic;
+    using Nancy;
+    using Nancy.ViewEngines.Razor;
 
-namespace ToDoList
-{
-  public class HomeModule : NancyModule
-  {
-    public HomeModule()
+    namespace ToDoList
     {
-      Get["/"] = _ => {
-        List<Category> AllCategories = Category.GetAll();
-        return View["index.cshtml", AllCategories];
-      };
+      public class HomeModule : NancyModule
+      {
+        public HomeModule()
+        {
+          Get["/"] = _ => {
+            List<Category> AllCategories = Category.GetAll();
+            return View["index.cshtml", AllCategories];
+          };
+        }
+      }
     }
-  }
-}
 ---
 
 #### 20. Add Views\index.cshtml
 ---
-<h1>To Do List</h1>
-<h4><a href="/categories">View Categories</a></h4>
-<h4><a href="/tasks">View Tasks</a></h4>
+    <h1>To Do List</h1>
+    <h4><a href="/categories">View Categories</a></h4>
+    <h4><a href="/tasks">View Tasks</a></h4>
 ---
 
 #### 21. Now run >dnx kestrel from the shell
@@ -232,101 +232,101 @@ namespace ToDoList
 
 #### 22. Add Views\categories.cshtml
 ---
-<h1>All categories</h1>
-@if (@Model.Count == 0)
-{
-  <p>There are no categories.</p>
-}
-<ul>
-  @foreach (var category in Model)
-  {
-    <li><a href="/categories/@category.GetId()">@category.GetName()</a></li>
-  }
-</ul>
-<a href="/categories/new">Add new category</a>
+    <h1>All categories</h1>
+    @if (@Model.Count == 0)
+    {
+      <p>There are no categories.</p>
+    }
+    <ul>
+      @foreach (var category in Model)
+      {
+        <li><a href="/categories/@category.GetId()">@category.GetName()</a></li>
+      }
+    </ul>
+    <a href="/categories/new">Add new category</a>
 ---
 
 #### 23. Add Views\tasks.cshtml
 ---
-@if (@Model.Count == 0)
-{
-  <p>No tasks have been added yet!</p>
-}
-else
-{
-  <h1>Here is your list of tasks:</h1>
-  <ul>
-    @foreach (var task in Model)
+    @if (@Model.Count == 0)
     {
-      <li>@task.GetDescription()</li>
+      <p>No tasks have been added yet!</p>
     }
-  </ul>
-  <form action="/tasks/delete" method="post">
-    <button type="submit">Clear all tasks</button>
-  </form>
-}
-<p><a href="/tasks/new">Add a new task</a></p>
-<p><a href="/">Return home</a></p>
+    else
+    {
+      <h1>Here is your list of tasks:</h1>
+      <ul>
+        @foreach (var task in Model)
+        {
+          <li>@task.GetDescription()</li>
+        }
+      </ul>
+      <form action="/tasks/delete" method="post">
+        <button type="submit">Clear all tasks</button>
+      </form>
+    }
+    <p><a href="/tasks/new">Add a new task</a></p>
+    <p><a href="/">Return home</a></p>
 ---
 
 #### 24. at HomeModule.cs Add corresponding routes for added .cshtml
 - Now, when we restart our server and visit the /tasks page we will see our tasks and categories. That is, we would if any existed. Since we haven't entered any tasks or categories, let's build out our functionality to create them.
 - Let's start with the routes again.
 ---
-Get["/categories/new"] = _ => {
-    return View["categories_form.cshtml"];
-  };
-  Post["/categories/new"] = _ => {
-    Category newCategory = new Category(Request.Form["category-name"]);
-    newCategory.Save();
-    return View["success.cshtml"];
-  };
-  Get["/tasks/new"] = _ => {
-    List<Category> AllCategories = Category.GetAll();
-    return View["tasks_form.cshtml", AllCategories];
-  };
-  Post["/tasks/new"] = _ => {
-    Task newTask = new Task(Request.Form["task-description"], Request.Form["category-id"]);
-    newTask.Save();
-    return View["success.cshtml"];
-  };    
+    Get["/categories/new"] = _ => {
+        return View["categories_form.cshtml"];
+      };
+      Post["/categories/new"] = _ => {
+        Category newCategory = new Category(Request.Form["category-name"]);
+        newCategory.Save();
+        return View["success.cshtml"];
+      };
+      Get["/tasks/new"] = _ => {
+        List<Category> AllCategories = Category.GetAll();
+        return View["tasks_form.cshtml", AllCategories];
+      };
+      Post["/tasks/new"] = _ => {
+        Task newTask = new Task(Request.Form["task-description"], Request.Form["category-id"]);
+        newTask.Save();
+        return View["success.cshtml"];
+      };    
 ---
 - we're creating a route to GET the form view, and a POST route the form view can call when we submit our new task or category.
 
 #### 25. Create our Views\categories_form.cshtml,
 **CATEGORIES_FORM.CSHTML**
 ---
-<form action="/categories/new" method="post">
-  <label for="category-name">Category name</label>
-  <input id="category-name" name="category-name" type="text">
-  <button type="submit">Add</button>
-</form>
+    <form action="/categories/new" method="post">
+      <label for="category-name">Category name</label>
+      <input id="category-name" name="category-name" type="text">
+      <button type="submit">Add</button>
+    </form>
 ---
 
 #### 26. create Views\tasks_form.cshtml
 **TASK_FORM.CSHTML**
 ---
-<h1>Add a new task</h1>
-<form action="/tasks/new" method="post">
-  <label for="task-description">Task description:</label>
-  <input id="task-description" name="task-description" type="text">
-  <select name="category-id">
-    @foreach (var category in Model)
-    {
-      <option value="@category.GetId()">@category.GetName()</option>
-    }
-  </select>
-  <button type="submit">Add new task</button>
-</form>
-<p><a href="/">Back home</a></p>
-<p><a href="/tasks">View all tasks</a></p>
+    <h1>Add a new task</h1>
+    <form action="/tasks/new" method="post">
+      <label for="task-description">Task description:</label>
+      <input id="task-description" name="task-description" type="text">
+      <select name="category-id">
+        @foreach (var category in Model)
+        {
+          <option value="@category.GetId()">@category.GetName()</option>
+        }
+      </select>
+      <button type="submit">Add new task</button>
+    </form>
+    <p><a href="/">Back home</a></p>
+    <p><a href="/tasks">View all tasks</a></p>
 ---
 
 ### 27. create Views\success.cshtml
 **SUCESS.CSHTML**
 ---
-<h1>Success!</h1>
-<a href="/">Return home</a>
+    <h1>Success!</h1>
+    <a href="/">Return home</a>
 ---
 
 _If we think of the app as a tree, it has two branches, one that represents tasks and one that represents categories. They overlap in some places, and grow together in some places, but basically at any given time the user will choose to either deal with tasks or categories. As you see, we're building out our tasks and categories branches at the same time, being careful to create our routes and then our views._
@@ -336,27 +336,27 @@ _If we think of the app as a tree, it has two branches, one that represents task
 #### 28. create Views\cleared.cshtml
 **CLEAR.cshtml**
 ---
-<h3>Tasks cleared!</h3>
-<a href="/">Back home</a>
+    <h3>Tasks cleared!</h3>
+    <a href="/">Back home</a>
 ---
 
 #### 29. create Routes to delete all tasks, and a route that displays an individual category.
 **Back to HomeModule.cs**
 ---
-...
-  Post["/tasks/delete"] = _ => {
-    Task.DeleteAll();
-    return View["cleared.cshtml"];
-  };
-  Get["/categories/{id}"] = parameters => {
-    Dictionary<string, object> model = new Dictionary<string, object>();
-    var SelectedCategory = Category.Find(parameters.id);
-    var CategoryTasks = SelectedCategory.GetTasks();
-    model.Add("category", SelectedCategory);
-    model.Add("tasks", CategoryTasks);
-    return View["category.cshtml", model];
-  };
-...
+    ...
+      Post["/tasks/delete"] = _ => {
+        Task.DeleteAll();
+        return View["cleared.cshtml"];
+      };
+      Get["/categories/{id}"] = parameters => {
+        Dictionary<string, object> model = new Dictionary<string, object>();
+        var SelectedCategory = Category.Find(parameters.id);
+        var CategoryTasks = SelectedCategory.GetTasks();
+        model.Add("category", SelectedCategory);
+        model.Add("tasks", CategoryTasks);
+        return View["category.cshtml", model];
+      };
+    ...
 ---
 - _The Post["/tasks/delete"] route will allow us to delete all our existing tasks, and display a page telling us that the tasks have been cleared. Meanwhile, the Get["categories/{id}"] route will populate a single category along with its related tasks._
 
@@ -364,24 +364,24 @@ _If we think of the app as a tree, it has two branches, one that represents task
 - Let's review how this is done. We've placed the {id} into the route name. This is taking the id of the category we've selected, and added it to the route parameters as the id property. We then pass parameters into the route. Our first line creates a dictionary we will use to build our model, so we call it model. We instantiate our SelectedCategory using the parameters.id and a list of the CategoryTasks. We then add the category object and task list to our model, using the strings "category" and "tasks" as they key within the dictionary. We then return the view, using category.cshtml and pass our model into it. Simple, right?
 
 ---
-category.cshtml
-<h2>Here are all the tasks in this category:</h2>
+    **category.cshtml**
+    <h2>Here are all the tasks in this category:</h2>
 
-@if (@Model["tasks"].Count == 0)
-{
-  <p>No tasks have been added yet!</p>
-}
-else
-{
-  <ol>
-    @foreach (var task in @Model["tasks"])
+    @if (@Model["tasks"].Count == 0)
     {
-      <li>@task.GetDescription()</li>
+      <p>No tasks have been added yet!</p>
     }
-  </ol>
-}
-<p><a href="/tasks/new">Add a new task</a></p>
-<p><a href="/">Return to Main Page</a></p>
+    else
+    {
+      <ol>
+        @foreach (var task in @Model["tasks"])
+        {
+          <li>@task.GetDescription()</li>
+        }
+      </ol>
+    }
+    <p><a href="/tasks/new">Add a new task</a></p>
+    <p><a href="/">Return to Main Page</a></p>
 ---
 
 #### 31. Run dnx kestrel to test all our routes
