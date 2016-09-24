@@ -105,7 +105,7 @@ This gives us all of the adults in contacts.
 
 A WHERE clauses accepts the following operators: =, !=, >, <, >=, <=, BETWEEN, LIKE, and IN. We can also prepend any operator with NOT. Here are examples of the last couple operators:
 
-> SELECT * FROM contacts WHERE age BETWEEN 13 AND 17;  
+_##> SELECT * FROM contacts WHERE age BETWEEN 13 AND 17;  
 > SELECT * FROM contacts WHERE name BETWEEN 'Judith' AND 'Wilma';
 > SELECT * FROM contacts WHERE name LIKE 'We%';
 > SELECT * FROM contacts WHERE birthday IN ('1969-01-01', '1999-01-01');
