@@ -130,12 +130,12 @@ _so that a task can belong to a category. To do this we will need to save the ta
     categoryIdParameter.Value = this.GetCategoryId();_
      - Add cmd.Parameters.Add(categoryIdParameter);
 
-- 6. **public static Task Find(int id)**     
+- 6. **public static Task Find(int id)**
      - Below SqlDataReader rdr
         - Add int foundTaskCategoryId = 0;
      - Below while(rdr.Read())
         - foundTaskCategoryId = rdr.GetInt32(2);
-     - At Task foundTask  = new Task(Add foundTaskCategoryId)  
+     - At Task foundTask  = new Task(Add foundTaskCategoryId)
 
 #### 17. in CategoryTest.cs add void Test RetrievesAllTasks withCategory()
 ---
@@ -289,7 +289,7 @@ refer to this link for below : https://www.learnhowtoprogram.com/c/c-database-ba
         Task newTask = new Task(Request.Form["task-description"], Request.Form["category-id"]);
         newTask.Save();
         return View["success.cshtml"];
-      };    
+      };
 ---
 - we're creating a route to GET the form view, and a POST route the form view can call when we submit our new task or category.
 
@@ -453,7 +453,7 @@ _If we think of the app as a tree, it has two branches, one that represents task
     }
   }
   ...
----  
+---
 
 #### 35. in HomeModule.cs ; making a new route to a page where we can edit one particular category:
 
@@ -493,7 +493,7 @@ _If we think of the app as a tree, it has two branches, one that represents task
 
   <form action="/categories/clear" method="post">
     <button type="submit">Clear all categories</button>
-  </form>  
+  </form>
 ---
 #### 36. Create _category_edit.cshtml_
 
