@@ -385,3 +385,63 @@ _If we think of the app as a tree, it has two branches, one that represents task
 ---
 
 #### 31. Run dnx kestrel to test all our routes
+
+#### 32. Create Update() for Category class via PATCH.
+* more info: https://www.learnhowtoprogram.com/c/c-database-basics/using-patch-and-delete-with-nancy
+
+- This will update the **attributes** of particular **Category**. We'll call this method in our _HomeModule.cs_
+
+  32. a) Start with spec in **CategoryTest.cs**
+---
+    [Fact]
+    public void Test_Update_UpdatesCategoryInDatabase()
+    {
+    //Arrange
+    string name = "Home stuff";
+    Category testCategory = new Category(name);
+    testCategory.Save();
+    string newName = "Work stuff";
+
+    //Act
+    testCategory.Update(newName);
+
+
+    string result = testCategory.GetName();
+
+    //Assert
+    Assert.Equal(newName, result);
+    }
+---
+
+  32. b) Add Update(string ..) in Category.cs
+
+
+
+## Information about CRUD operation in database w/Nancy
+*https://www.learnhowtoprogram.com/c/c-database-basics/http-crud-and-*
+- Creating information, reading, updating, & destroy it. (in NANCY ...HomeModule.cs)
+- **POST method** CREATEs something on the server.
+- **GET method** retrieves information w/o changing anything on the server.
+- **PATCH & DELETE** common HTTP methods, to *update & destroy* information
+ * Most browser can only make GET & POST requests.
+ * To make a PATCH & DELETE requests
+   - make a POST request & then include some extra information telling the server to treat it like a PATCH or DELETE.
+   - example: when you edit the caption on a photo, you are telling your browser to make a PATCH request to the FB server, b/c you're updating the existing photo.
+   - when you delete that old photo of you, you're telling your browser to make a DELETE request (removing that resources from the FB server).
+   - In modern web applications, we use the same URL & different HTTP method to convey what we're trying to do.
+ * example:
+---
+    Create a vehicle: POST http://localhost:5004/vehicles
+    View a vehicle: GET http://localhost:5004/vehicles/5 (where 5 is the ID)
+    Update a vehicle: PATCH http://localhost:5004/vehicles/5
+    Delete a vehicle: DELETE http://localhost:5004/vehicles/5
+---
+   - Using the same URL and different HTTP methods to convey what action the server should take is part of a widely-accepted approach for designing web applications called **REST, or REpresentational State Transfer.**
+
+   - if you follow REST each part of your application is modeled as a **resource.**
+
+   - For now, you can think of each object in your application as a resource (_this isn't always true; for more complex applications_)
+
+   - For **Viewing multiple vehicles**, the request would typically be **GET http://localhost:5004/vehicles**
+
+   -For **Searching a vehicle/ Viewing a subset of all the vehicles**, the request might be **GET http://localhost:8000/vehicles?color=red&make=toyota.**
