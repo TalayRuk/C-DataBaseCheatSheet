@@ -391,34 +391,271 @@ _If we think of the app as a tree, it has two branches, one that represents task
 
 - This will update the **attributes** of particular **Category**. We'll call this method in our _HomeModule.cs_
 
-  32. a) Start with spec in **CategoryTest.cs**
+#### 33. Start with spec in **CategoryTest.cs**
+  * CategoryTest.cs
 ---
-    [Fact]
-    public void Test_Update_UpdatesCategoryInDatabase()
+  [Fact]
+  public void Test_Update_UpdatesCategoryInDatabase()
+  {
+  Arrange
+  string name = "Home stuff";
+  Category testCategory = new Category(name);
+  testCategory.Save();
+  string newName = "Work stuff";
+
+  Act
+  testCategory.Update(newName);
+
+
+  string result = testCategory.GetName();
+
+  Assert
+  Assert.Equal(newName, result);
+  }
+---
+
+#### 34. Add Update(string ..) in Category.cs
+  * Category.cs
+---
+  ...
+  public void Update(string newName)
+  {
+    SqlConnection conn = DB.Connection();
+    conn.Open();
+
+    SqlCommand cmd = new SqlCommand("UPDATE categories SET name = @NewName OUTPUT INSERTED.name WHERE id = @CategoryId;", conn);
+
+    SqlParameter newNameParameter = new SqlParameter();
+    newNameParameter.ParameterName = "@NewName";
+    newNameParameter.Value = newName;
+    cmd.Parameters.Add(newNameParameter);
+
+
+    SqlParameter categoryIdParameter = new SqlParameter();
+    categoryIdParameter.ParameterName = "@CategoryId";
+    categoryIdParameter.Value = this.GetId();
+    cmd.Parameters.Add(categoryIdParameter);
+    SqlDataReader rdr = cmd.ExecuteReader();
+
+    while(rdr.Read())
     {
-    //Arrange
-    string name = "Home stuff";
-    Category testCategory = new Category(name);
-    testCategory.Save();
-    string newName = "Work stuff";
-
-    //Act
-    testCategory.Update(newName);
-
-
-    string result = testCategory.GetName();
-
-    //Assert
-    Assert.Equal(newName, result);
+      *this._name* = rdr.GetString(0);
     }
+
+    if (rdr != null)
+    {
+      rdr.Close();
+    }
+
+    if (conn != null)
+    {
+      conn.Close();
+    }
+  }
+  ...
+---  
+
+#### 35. in HomeModule.cs ; making a new route to a page where we can edit one particular category:
+
+- We use the SQL *UPDATE* statement to update the categories table at the record where the identity column ID is the ID of the object we are calling the method on.
+- Now that our test is passing, let's change the Nancy files to work with our new method.
+**HomeModule.cs**
+---
+  ...
+  Get["category/edit/{id}"] = parameters => {
+  Category SelectedCategory = Category.Find(parameters.id);
+  return View["category_edit.cshtml", SelectedCategory];
+  };
+  ...
+---
+- We are passing in the {id} of the category as part of the URL and setting it equal to the parameter **parameters.id.**
+
+- Then we find the correct category object using our **Find()** and pass it into a new view called **category_edit.cshtml**
+
+- We need to add in a link to our **categories.cshtml** page to acess this new route.
+
+**Categories.cshtml**
+---
+  <h1>To Do List</h1>
+  <hr />
+  <h2>Categories:</h2>
+  <ul>
+    @if (Model.Count != 0)
+    {
+      @foreach (var category in Model)
+      {
+        <li><a href="/categories/@category.GetId()">@category.GetName()</a> | <a href="/category/edit/@category.GetId()">Edit</a></li>
+      }
+    }
+  </ul>
+  <h4><a href="/categories/new">Add a new category</a></h4>
+  <h4><a href="/">Return home</a></h4>
+
+  <form action="/categories/clear" method="post">
+    <button type="submit">Clear all categories</button>
+  </form>  
+---
+#### 36. Create _category_edit.cshtml_
+
+- now we have the **Edit link** next to each of our categories, and we can make this new category_edit.cshtml page to be rendered when someone clicks on the link
+
+**category_edit.cshtml**
+---
+  <h1>To Do List</h1>
+  <hr />
+  <h2>Edit category: @Model.GetName()</h2>
+  <form action="/category/edit/@Model.GetId()" method="post">
+    <input type="hidden" name="*_method"* value="PATCH">
+    <input name="category-id" type="hidden" value="@Model.GetId()">
+    <label for="category-name">Category name</label>
+    <input id="category-name" name="category-name" type="text">
+    <button type="submit">Submit</button>
+  </form>
+  <h4><a href="/">Return home</a></h4>
 ---
 
-  32. b) Add Update(string ..) in Category.cs
+#### 37. Need to Update _HomeModule.cs_ to contain new route to make the *_method* input work.
 
+- Web browsers can only make GET & POST requests, we need some way to communicate to our app that even though the form is submitted w/the POST method, the server should treat it like a PATCH request.
+- The line **<input name="_method" type="hidden" value="PATCH">** is a common way for forms to communicate to the server to treat the request as a different method than the "real" one it's actually using.
 
+**HomeModule.cs**
+---
+  ...
+  Patch["category/edit/{id}"] = parameters => {
+    Category SelectedCategory = Category.Find(parameters.id);
+    SelectedCategory.Update(Request.Form["category-name"]);
+    return View["success.cshtml"];
+  };
+  ...
+---
+- We added in **Get["category/edit/{id}"] = parameters => {...};** to show us the _new edit page for the category_ and the route **Patch["category/edit/{id}"] = parameters => {...};** to handle the _updating of our database._ Now we can fire up the server and make sure that our changes work.
+
+#### 38. Create specs for PATCH & DELETE method in CategoryTest.cs
+
+- Let's tackle the **DELETE** method now. Luckily it is very similar to the PATCH method. We will start by writing a method to delete a particular category.
+
+- One thing to think about before we get too far is that when we delete a category, we want to delete all of the tasks that are attached to it. So we will a specs for this new method:
+
+**CategoryTest.cs**
+---
+  ...
+  [Fact]
+  public void Test_Delete_DeletesCategoryFromDatabase()
+  {
+  Arrange
+  string name1 = "Home stuff";
+  Category testCategory1 = new Category(name1);
+  testCategory1.Save();
+
+  string name2 = "Work stuff";
+  Category testCategory2 = new Category(name2);
+  testCategory2.Save();
+
+  Task testTask1 = new Task("Mow the lawn", testCategory1.GetId());
+  testTask1.Save();
+  Task testTask2 = new Task("Send emails", testCategory2.GetId());
+  testTask2.Save();
+
+  Act
+  testCategory1.Delete();
+  List<Category> resultCategories = Category.GetAll();
+  List<Category> testCategoryList = new List<Category> {testCategory2};
+
+  List<Task> resultTasks = Task.GetAll();
+  List<Task> testTaskList = new List<Task> {testTask2};
+
+  Assert
+  Assert.Equal(testCategoryList, resultCategories);
+  Assert.Equal(testTaskList, resultTasks);
+  }
+  ...
+---
+#### 39. Add Delete() in Category.cs to pass the test:
+
+**Category.cs**
+---
+  ...
+  public void Delete()
+  {
+    SqlConnection conn = DB.Connection();
+    conn.Open();
+
+    SqlCommand cmd = new SqlCommand("DELETE FROM categories WHERE id = @CategoryId; DELETE FROM tasks WHERE category_id = @CategoryId;", conn);
+
+    SqlParameter categoryIdParameter = new SqlParameter();
+    categoryIdParameter.ParameterName = "@CategoryId";
+    categoryIdParameter.Value = this.GetId();
+
+    cmd.Parameters.Add(categoryIdParameter);
+    cmd.ExecuteNonQuery();
+
+    if (conn != null)
+    {
+      conn.Close();
+    }
+  }
+  ...
+---
+- Let's run our tests & make sure these are passing. We can move on to updating our Nancy app files.
+
+- Since we don't need a separate page to delete an object, let's add another link in the **categories.cshtml** file to allow a user to delete a particular category.
+
+- it will take the user to a confirmation, where we will confirm & call our new Delete method.
+
+#### 40. Update the list item w/in the **foreach** loop that lists our categories:
+
+**categories.cshtml**
+---
+  ...
+  <li><a href="/categories/@category.GetId()">@category.GetName()</a> | <a href="/category/edit/@category.GetId()">Edit</a>| <a href="/category/delete/@category.GetId()">Delete</a></li>
+  ...
+---
+- Notice our **Delete** link is taking us to a **category/delete/{id} route.**
+- This is where we will build our GET & DELETE routes.
+
+#### 41. Create Confirmation page **category_delete.cshtml**
+
+---
+  <h1>To Do List</h1>
+  <hr/>
+  <h2>Are you sure you want to delete this category and all of its tasks?</h2>
+  <h4>@Model.GetName()</h4>
+  <form action="/category/delete/@Model.GetId()" method="post">
+    <input type="hidden" name=*"_method"* value="DELETE">
+    <button type="submit">Delete</button>
+  </form>
+  <p><a href="/">Back home</a></p>
+---
+
+- This form just contains a button, which will send a "faked" DELETE request to the route.
+
+#### 42. in our HomeModule.cs file. Add **Delete["category/delete/{id}"] = parameters => {...}** along with the route to GET the confirmation page now:
+
+**HomeModule.cs**
+---
+  ...
+  Get["category/delete/{id}"] = parameters => {
+    Category SelectedCategory = Category.Find(parameters.id);
+    return View["category_delete.cshtml", SelectedCategory];
+  };
+  Delete["category/delete/{id}"] = parameters => {
+    Category SelectedCategory = Category.Find(parameters.id);
+    SelectedCategory.Delete();
+    return View["success.cshtml"];
+  };
+  ...
+---
+
+- In this **DELETE** route, we find the correct category from the ID in the URL, call the **Delete()** on it, and then render **success.cshtml**
+
+#### 43. run > dnx kestrel
+- Then we should be able to see these changes reflected in our browser.
+
+________________________________________________________
 
 ## Information about CRUD operation in database w/Nancy
-*https://www.learnhowtoprogram.com/c/c-database-basics/http-crud-and-*
+*https://www.learnhowtoprogram.com/c/c-database-basics/http-crud-and-c*
 - Creating information, reading, updating, & destroy it. (in NANCY ...HomeModule.cs)
 - **POST method** CREATEs something on the server.
 - **GET method** retrieves information w/o changing anything on the server.
@@ -431,10 +668,10 @@ _If we think of the app as a tree, it has two branches, one that represents task
    - In modern web applications, we use the same URL & different HTTP method to convey what we're trying to do.
  * example:
 ---
-    Create a vehicle: POST http://localhost:5004/vehicles
-    View a vehicle: GET http://localhost:5004/vehicles/5 (where 5 is the ID)
-    Update a vehicle: PATCH http://localhost:5004/vehicles/5
-    Delete a vehicle: DELETE http://localhost:5004/vehicles/5
+  Create a vehicle: POST http://localhost:5004/vehicles
+  View a vehicle: GET http://localhost:5004/vehicles/5 (where 5 is the ID)
+  Update a vehicle: PATCH http://localhost:5004/vehicles/5
+  Delete a vehicle: DELETE http://localhost:5004/vehicles/5
 ---
    - Using the same URL and different HTTP methods to convey what action the server should take is part of a widely-accepted approach for designing web applications called **REST, or REpresentational State Transfer.**
 
@@ -445,3 +682,8 @@ _If we think of the app as a tree, it has two branches, one that represents task
    - For **Viewing multiple vehicles**, the request would typically be **GET http://localhost:5004/vehicles**
 
    -For **Searching a vehicle/ Viewing a subset of all the vehicles**, the request might be **GET http://localhost:8000/vehicles?color=red&make=toyota.**
+
+________________________________________________________
+
+## Weekly Technical Interview Practice: C# & Databases
+   https://www.learnhowtoprogram.com/c/c-database-basics/weekly-technical-interview-practice-c-databases
