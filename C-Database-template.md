@@ -8,7 +8,15 @@ Before we start writing our code, we'll need to open SQLCMD, create a database n
 
 SQLCMD -S "(localdb)\mssqllocaldb"
 
-1> CREATE DATABASE hair_salon; 2> GO 1> USE hair_salon; 2> GO 1> CREATE TABLE Client 2> ( 3> id INT IDENTITY (1,1), 4> c_name VARCHAR(255), c_phone INT 5> ); 6> GO
+1> CREATE DATABASE hair_salon; 
+2> GO 
+1> USE hair_salon; 
+2> GO 1> CREATE TABLE Client 
+2> ( 
+3> id INT IDENTITY (1,1), 
+4> c_name VARCHAR(255), c_phone INT 
+5> ); 
+6> GO
 
 Create project files .. Db class in database.cs -then create backup from hair_style database -create restore hair_style_test database
 
@@ -32,7 +40,7 @@ public void Dispose()
 
 2. Start writing Client.cs: write class & constructor, Getter & Setter
 #### add GetAll() method to Task class
-#### public static list<Task> GetAll()
+#### public static List<Task> GetAll()
 then
 #### add DeleteAll() method to Task class
 
