@@ -39,13 +39,16 @@ public void Dispose()
  - our first spec we are testing the static Task.GetAll() method then we will pull out all the tasks from the database into a list & since we haven't saved anything yet the list will be empty.
 
 2. Start writing Client.cs: write class & constructor, Getter & Setter
+#### add DeleteAll() method to Task class
+then
 #### add GetAll() method to Task class
 #### public static List<Task> GetAll()
-then
-#### add DeleteAll() method to Task class
+
+
 
 3. B4 we save tasks to the database, need to override to tell
 database that both object are equally the same
+test kitten1 & kitten 2 need to have same parameters in order for the test to pass 
 #### write spec to test for override the Equals() method
 public override bool Equals(System.Object otherKitten)
 {
@@ -64,7 +67,7 @@ _the default Equals method accepts any type of object, when we override it, we n
 **Once we have the kitten object, we compare their names. If they're the same, we return true to indicate that they are the same kitten.**
 
 4. Need this method _to compare a kitten with an object of another class:_
-#### add public override int GetHashCode()
+#### add public override int GetHashCode() at the bottom of all the codes
 public override int GetHashCode()
 {
      return this.GetName().GetHashCode();
@@ -145,7 +148,7 @@ _so that a task can belong to a category. To do this we will need to save the ta
         - foundTaskCategoryId = rdr.GetInt32(2);
      - At Task foundTask  = new Task(Add foundTaskCategoryId)
 
-#### 17. in CategoryTest.cs add void Test RetrievesAllTasks withCategory()
+#### 17. in CategoryTest.cs add test below find() ..void Test RetrievesAllTasks withCategory()
 ---
     [Fact]
     public void Test_GetTasks_RetrievesAllTasksWithCategory()
